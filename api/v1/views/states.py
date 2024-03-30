@@ -26,10 +26,25 @@ def get_states():
         return jsonify([state.to_dict() for state in states])
 
 
-@app_views.route('/states/<state_id>', methods=['GET'])
+@app_views.route('/states/<state_id>', methods=['GET', 'PUT'])
 def get_state_by_id(state_id):
-    states = storage.all(State).values()
-    for state in states:
-        if state.id == state_id:
-            return jsonify([state.to_dict()])
-    abort(404)
+    state = storage.get(State, state_id)
+
+    if state is None:
+        abort(404)
+
+    if request.method == 'PUT':
+        data = request.get_json()
+
+        if not data:
+            return jsonify({"error": "Not a JSON"}), 400
+
+        for key, value in data.items():
+            if key not in ['id', 'created_at', 'updated_at']:
+                setattr(state, key, value)
+
+        storage.save()
+
+        return jsonify(state.to_dict()), 200
+    
+    return jsonify([state.to_dict()]), 200
