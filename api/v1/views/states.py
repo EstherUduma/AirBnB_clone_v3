@@ -50,5 +50,5 @@ def get_state_by_id(state_id):
         state.delete()
         storage.save()
         return jsonify({}), 200
-    
+
     return jsonify([state.to_dict()]), 200
